@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/mvc https://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+    <!--声明组件扫描器，这个是为了扫描到类中注解，然后创建相应的Servlet对象-->
+    <context:component-scan base-package="com.yunbocheng.controller" />
+
+    <!--声明 SpringMVC框架中的视图解析器，帮助开发人员设置视图文件(jsp文件)的路径-->
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <!--前缀：视图文件的路径-->
+        <!--注意:这个路径前后的斜杠都需要加，第一个斜杠代表web的根路径，第二个斜杠代表他是一个路径-->
+        <property name="prefix" value="/WEB-INF/view/" />
+        <!--后缀：视图文件的扩展名-->
+        <property name="suffix" value=".jsp" />
+    </bean>
+
+    <!--
+        加入 注册驱动。
+        default-servlet-handler 和 @RequestMapping注解有冲突，需要加入 annotation-driven 解决问题
+    -->
+    <mvc:annotation-driven />
+    <!--
+        当web.xml的中央调度器中路径(url-pattern)值使用斜杠的时候 需要处理静态资源。
+        第一种处理静态资源的方式：
+            需要在SpringMVC配置文件加入 <mvc:default-servlet-handler>
+            原理是：加入这个标签后，框架会创建一个控制器对象DefaultServletHttpRequestHandler
+                   就是类似我们自己写的MyController
+
+       DefaultServletHttpRequestHandler ：这个对象可以把接到的请求转发给 tomcat的default这个Servlet。
+                                          而tomcat的default这个Servlet对象是可以处理静态页面的。
+       也就是说最终还是把这个请求交给了tomcat处理。
+
+       这种处理请求虽然简单，但是需要注册驱动，否则default-servlet-handler 和 @RequestMapping注解有冲突
+       而且这种方式是依赖于tomcat服务器的，如果服务器发生变化，那么获取服务器中default这个Servlet对象的标签也会发生变化。
+
+        这种依赖于服务器的方式使用较少，使用最多的是第二种，依赖springmvc框架的方式。
+
+    -->
+    <mvc:default-servlet-handler />
+</beans>

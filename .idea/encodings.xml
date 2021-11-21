@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/Hello-SpringMVC/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Hello-SpringMVC/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Spring-Parameter/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Spring-Parameter/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Spring-ReturnValue/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Spring-ReturnValue/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Spring-url-pattern的第二种方式/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Spring-url-pattern的第二种方式/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/SpringMVC-annotation/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/SpringMVC-annotation/src/main/resources" charset="UTF-8" />
+  </component>
+</project>

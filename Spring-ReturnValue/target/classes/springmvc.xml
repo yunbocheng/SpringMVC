@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/mvc https://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+    <!--声明组件扫描器，这个是为了扫描到类中注解，然后创建相应的Servlet对象-->
+    <context:component-scan base-package="com.yunbocheng.controller" />
+
+    <!--声明 SpringMVC框架中的视图解析器，帮助开发人员设置视图文件(jsp文件)的路径-->
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <!--前缀：视图文件的路径-->
+        <!--注意:这个路径前后的斜杠都需要加，第一个斜杠代表web的根路径，第二个斜杠代表他是一个路径-->
+        <property name="prefix" value="/WEB-INF/view/" />
+        <!--后缀：视图文件的扩展名-->
+        <property name="suffix" value=".jsp" />
+    </bean>
+
+    <!--
+        设置注解驱动，注意：这里一定要选择mvc工具包中的 annotation-driven
+        这个注解驱动是为了转换处理结果，将Java对象转换为json、text、xml等格式的。
+    -->
+    <mvc:annotation-driven />
+</beans>
+

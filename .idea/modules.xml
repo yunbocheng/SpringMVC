@@ -2,7 +2,12 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/Hello-SpringMVC/Hello-SpringMVC.iml" filepath="$PROJECT_DIR$/Hello-SpringMVC/Hello-SpringMVC.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Spring-Parameter/Spring-Parameter.iml" filepath="$PROJECT_DIR$/Spring-Parameter/Spring-Parameter.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Spring-ReturnValue/Spring-ReturnValue.iml" filepath="$PROJECT_DIR$/Spring-ReturnValue/Spring-ReturnValue.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Spring-url-pattern的第二种方式/Spring-url-pattern的第二种方式.iml" filepath="$PROJECT_DIR$/Spring-url-pattern的第二种方式/Spring-url-pattern的第二种方式.iml" />
       <module fileurl="file://$PROJECT_DIR$/SpringMVC.iml" filepath="$PROJECT_DIR$/SpringMVC.iml" />
+      <module fileurl="file://$PROJECT_DIR$/SpringMVC-annotation/SpringMVC-annotation.iml" filepath="$PROJECT_DIR$/SpringMVC-annotation/SpringMVC-annotation.iml" />
     </modules>
   </component>
 </project>

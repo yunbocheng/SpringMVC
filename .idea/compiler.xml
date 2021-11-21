@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="SpringMVC-annotation" />
+        <module name="Spring-ReturnValue" />
+        <module name="Hello-SpringMVC" />
+        <module name="Spring-Parameter" />
+        <module name="Spring-url-pattern的第二种方式" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="Hello-SpringMVC" target="1.8" />
+      <module name="Spring-Parameter" target="1.8" />
+      <module name="Spring-ReturnValue" target="1.8" />
+      <module name="Spring-url-pattern的第二种方式" target="1.8" />
+      <module name="SpringMVC-annotation" target="1.8" />
+    </bytecodeTargetLevel>
+  </component>
+</project>
