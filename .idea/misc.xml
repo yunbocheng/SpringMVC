@@ -6,6 +6,7 @@
     <file type="web" url="file://$PROJECT_DIR$/Spring-ReturnValue" />
     <file type="web" url="file://$PROJECT_DIR$/Spring-url-pattern的第二种方式" />
     <file type="web" url="file://$PROJECT_DIR$/SpringMVC-annotation" />
+    <file type="web" url="file://$PROJECT_DIR$/SSM整合开发" />
   </component>
   <component name="MavenProjectsManager">
     <option name="originalFiles">
@@ -16,6 +17,7 @@
         <option value="$PROJECT_DIR$/Spring-Parameter/pom.xml" />
         <option value="$PROJECT_DIR$/Spring-ReturnValue/pom.xml" />
         <option value="$PROJECT_DIR$/Spring-url-pattern的第二种方式/pom.xml" />
+        <option value="$PROJECT_DIR$/SSM整合开发/pom.xml" />
       </list>
     </option>
   </component>

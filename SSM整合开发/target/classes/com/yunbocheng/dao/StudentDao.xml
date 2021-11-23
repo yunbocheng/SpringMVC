@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yunbocheng.dao.StudentDao" >
+
+    <resultMap id="student" type="com.yunbocheng.entity.Student">
+        <id column="num" property="num"/>
+        <result column="province" property="province"/>
+        <result column="city" property="city"/>
+        <result column="name" property="name"/>
+        <result column="age" property="age"/>
+        <result column="score" property="score"/>
+        <result column="room" property="room"/>
+    </resultMap>
+
+    <select id="selectStudent" resultMap="student">
+        /*在实际开发中，尽量不写*号，写列名*/
+        select num,province,city,name,age,score,room from tab_student order by num;
+    </select>
+
+    <insert id="insertStudent" parameterType="Student">
+        insert into tab_student(num,province,city,name,age,score,room) values (#{num},#{province},#{city},#{name},#{age},#{score},#{room})
+    </insert>
+</mapper>

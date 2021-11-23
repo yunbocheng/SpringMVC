@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <!--设置输出日志-->
+        <settings>
+            <setting name="logImpl" value="STDOUT_LOGGING" />
+        </settings>
+
+    <!--设置别名，使用报名的方式，包中的类名就是别名-->
+      <typeAliases>
+         <package name="com.yunbocheng.entity"/>
+     </typeAliases>
+
+    <mappers>
+        <!--
+            使用package ：指定dao接口包的位置，表示将包下面的sql映射文件找到
+            name: Dao接口的包名
+            使用package指定映射文件的要求：
+                1. sql映射文件(StudentDao.xml)和接口名一致
+                2. sql映射文件和Dao接口在同一目录
+        -->
+        <package name="com.yunbocheng.dao"/>
+    </mappers>
+</configuration>

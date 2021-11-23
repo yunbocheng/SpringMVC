@@ -7,6 +7,7 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="SSM整合开发" />
         <module name="SpringMVC-annotation" />
         <module name="Spring-ReturnValue" />
         <module name="Hello-SpringMVC" />
@@ -20,6 +21,7 @@
       <module name="Spring-ReturnValue" target="1.8" />
       <module name="Spring-url-pattern的第二种方式" target="1.8" />
       <module name="SpringMVC-annotation" target="1.8" />
+      <module name="SSM整合开发" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>

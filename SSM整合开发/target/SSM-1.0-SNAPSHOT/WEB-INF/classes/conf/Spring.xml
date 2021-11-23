@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
+
+    <!--Spring配置文件：声明service,dao,工具类等对象-->
+
+    <!--声明数据库配置文件的位置-->
+    <context:property-placeholder location="classpath:conf/jdbc.properties" />
+
+    <!--声明数据源，连接数据库-->
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init"
+          destroy-method="close">
+        <!--
+            使用value还是ref，得看name属性对应的setUrl()、setUsername()方法的形参中类型
+            如果是简单数据类型(基本数据类型、包装类、String)就使用value
+            如果是引用数据类型(Object object)、List、Map等需要使用ref
+        -->
+        <property name="url" value="${jdbc.url}?serviceTimezone=GMT%2B&amp;charsetEncoding=utf-8&amp;useUnicode=true"/>
+        <property name="username" value="${jdbc.username}"/>
+        <property name="password" value="${jdbc.password}"/>
+    </bean>
+
+     <!--使用SqlSessionFactoryBean创建SqlSessionFactory对象-->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="configLocation" value="classpath:/conf/MyBatis.xml"/>
+    </bean>
+
+    <!--声明MyBatis的扫描器，创建Dao对象，也就是dao接口的实现类，使用的是JDK的动态代理创建-->
+    <!--创建dao的动态代理对象-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+        <!--这个也是路径信息，是包的全限定名称-->
+        <property name="basePackage" value="com.yunbocheng.dao"/>
+    </bean>
+
+    <!--
+        因为StudentDao没有对应的实现类，需要使用JDK动态代理来获取接口的实现类。
+        而service接口存在实现类，直接是实现类上使用@Service声明这个创建的是一个Service对象。
+    -->
+    <!--声明service的注解的@Service所在包的位置，完成service的创建-->
+    <context:component-scan base-package="com.yunbocheng.service"/>
+
+    <!--事务配置：注解的配置，aspectJ的配置-->
+
+</beans>

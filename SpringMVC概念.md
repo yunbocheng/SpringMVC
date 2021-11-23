@@ -557,3 +557,653 @@ index.jsp --> DispatherServlet(Spring提供的一个Servlet对象) --> 转发、
 
 ![](https://gitee.com/YunboCheng/imageBad/raw/master/image/20211121231909.png)
 
+
+
+## 第三章 SSM整合开发
+
+- SSM 编程，即 SpringMVC + Spring + MyBatis 整合，是当前最为流行的 JavaEE 开发技术架 构。其实 SSM 整合的实质，仅仅就是将 MyBatis整合入 Spring。因为 SpringMVC原本就是 Spring 的一部分，不用专门整合。
+- **SSM 整合的实现方式可分为两种：基于 XML 配置方式，基于注解方式。**
+
+### 3.1 搭建SSM开发环境
+
+#### 3.1.1 添加pom.xml依赖
+
+```xml
+<!--servlet依赖-->
+<dependency>
+<groupId>javax.servlet</groupId>
+<artifactId>javax.servlet-api</artifactId>
+<version>3.1.0</version>
+<scope>provided</scope>
+</dependency>
+<!-- jsp依赖 -->
+<dependency> 
+ <groupId>javax.servlet.jsp</groupId> 
+ <artifactId>jsp-api</artifactId> 
+ <version>2.2.1-b03</version> 
+ <scope>provided</scope>
+</dependency>
+<dependency>
+<!--springMVC依赖-->
+<groupId>org.springframework</groupId>
+<artifactId>spring-webmvc</artifactId>
+<version>5.2.5.RELEASE</version>
+</dependency>
+<!--SpringM处理事务的依赖-->
+<dependency>
+<groupId>org.springframework</groupId>
+<artifactId>spring-tx</artifactId>
+<version>5.2.5.RELEASE</version>
+</dependency>
+<!--spring处理数据库连接的依赖-->
+<dependency>
+<groupId>org.springframework</groupId>
+<artifactId>spring-jdbc</artifactId>
+<version>5.2.5.RELEASE</version>
+</dependency>
+<!--将数据转换为json格式的依赖-->
+<dependency>
+<groupId>com.fasterxml.jackson.core</groupId>
+<artifactId>jackson-core</artifactId>
+<version>2.9.0</version>
+</dependency>
+<dependency>
+<groupId>com.fasterxml.jackson.core</groupId>
+<artifactId>jackson-databind</artifactId>
+<version>2.9.0</version>
+</dependency>
+<!--spring整合mybatis的依赖-->
+<dependency>
+<groupId>org.mybatis</groupId>
+<artifactId>mybatis-spring</artifactId>
+<version>1.3.1</version>
+</dependency>
+<!--mybatis的依赖-->
+<dependency>
+<groupId>org.mybatis</groupId>
+<artifactId>mybatis</artifactId>
+<version>3.5.1</version>
+</dependency>
+<!--数据库连接驱动-->
+<dependency>
+<groupId>mysql</groupId>
+<artifactId>mysql-connector-java</artifactId>
+<version>5.1.9</version>
+</dependency>
+<!--数据路连接池依赖-->
+<dependency>
+<groupId>com.alibaba</groupId>
+<artifactId>druid</artifactId>
+<version>1.1.12</version>
+</dependency>
+```
+
+#### 3.1.2 配置web.xml
+
+**（1）注册ContextLoaderListenter监听器**
+
+![image-20211122203151417](https://gitee.com/YunboCheng/imageBad/raw/master/image/image-20211122203151417.png)
+
+- 注册 ServletContext 监听器的实现类 ContextLoaderListener，用于创建 Spring 容器及将创 建好的 Spring 容器对象放入到 ServletContext 的作用域中。
+
+**(2) 注册字符集处理器**
+
+![](https://gitee.com/YunboCheng/imageBad/raw/master/image/20211122203331.png)
+
+- 注册字符集过滤器，用于解决请求参数中携带中文时产生乱码问题。
+
+**（3）配置中央调度器**
+
+- 配置中央调度器时需要注意，SpringMVC的配置文件名与其它 Spring配置文件名不相同。 这样做的目的是 Spring 容器创建管理 Spring 配置文件中的 bean， SpringMVC 容器中负责视 图层 bean 的初始。
+
+![](https://gitee.com/YunboCheng/imageBad/raw/master/image/20211122203506.png)
+
+### 3.2 SSM整合注解开发
+
+项目：ssm
+
+需求：完成学生注册和信息浏览。
+
+#### 3.2.1 建表 Student
+
+![](https://gitee.com/YunboCheng/imageBad/raw/master/image/20211122223456.png)
+
+#### 3.2.2 新建 Web 工程
+
+工程名称 ssm
+
+#### 3.2.3 maven 依赖
+
+- **添加项目搭建的时候哪些依赖即可。**
+
+#### 3.2.4  定义包，组织程序的结构
+
+![image-20211122220732844](https://gitee.com/YunboCheng/imageBad/raw/master/image/image-20211122220732844.png)
+
+![](https://gitee.com/YunboCheng/imageBad/raw/master/image/20211122220742.png)
+
+#### 3.2.5  编写配置文件
+
+**(1) Jdbc 属性配置文件 jdbc.properties**
+
+```properties
+jdbc.url=jdbc:mysql://localhost:3306/school
+jdbc.username=root
+jdbc.password=567cybtfboys
+```
+
+**(2) 配置web.xml**
+
+- 配置中央调度器。将SpringMVC配置文件中的对象(Controller)全部加载到SpringMVC容器中。
+- 配置监听器。将Spring配置文件中的全部对象(Dao、Service)全部加载到Spring容器中。
+- 配置过滤器。解决post请求中的中文乱码问题。
+- web.xml可以加载出Spring.xml以及SpringMVC.xml文件。
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
+         version="4.0">
+
+  <welcome-file-list>
+    <welcome-file>index.jsp</welcome-file>
+  </welcome-file-list>
+
+  <!--
+    注册中央调度器，创建SpringMVC容器对象
+    将SpringMVC配置文件中的所有被@Controller注解的类为Servlet对象
+  -->
+  <servlet>
+    <servlet-name>myWeb</servlet-name>
+    <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+    <init-param>
+      <param-name>contextConfigLocation</param-name>
+      <param-value>classpath:conf/SpringMVC.xml</param-value>
+    </init-param>
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>myWeb</servlet-name>
+    <url-pattern>*.do</url-pattern>
+  </servlet-mapping>
+
+  <!--
+    注册监听器，创建Spring容器对象，创建Spring.xml的配置文件中的所有对象。
+    监听器加载spring主配置文件的路径是: /WEB-INF/spring.xml(Spring主配置文件)
+    我们此时修改为自己的保存spring.xml的路径。
+  -->
+  <context-param>
+    <param-name>contextConfigLocation</param-name>
+    <param-value>classpath:conf/Spring.xml</param-value>
+  </context-param>
+  <listener>
+    <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+  </listener>
+
+  <!--注册声明过滤器，解决中文乱码问题-->
+  <filter>
+  <!--名字是自定义的-->
+  <filter-name>characterEncodingFilter</filter-name>
+  <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+  <!--设置项目中使用字符编码-->
+  <init-param>
+    <param-name>encoding</param-name>
+    <param-value>utf-8</param-value>
+  </init-param>
+  <!--强制请求对象(HttpServletRequest)使用encoding编码的值，也就是上边声明的这个 utf-8-->
+  <init-param>
+    <param-name>forceRequestEncoding</param-name>
+    <param-value>true</param-value>
+  </init-param>
+  <!--设置应答对象(HttpServletResponse)使用encoding编码的值，也就是上边声明的这个 utf-8-->
+  <init-param>
+    <param-name>forceResponseEncoding</param-name>
+    <param-value>true</param-value>
+  </init-param>
+  </filter>
+  <filter-mapping>
+  <filter-name>characterEncodingFilter</filter-name>
+  <!--
+    /* : 表示强制所有的请求先通过过滤器处理。
+  -->
+  <url-pattern>/*</url-pattern>
+  </filter-mapping>
+
+</web-app>
+
+```
+
+**(3) Spring配置文件 applicationContext.xml**
+
+- Spring主配置文件组件扫描器扫描的是Dao、Service的对象。
+- 配置连接数据库的信息。
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
+
+    <!--Spring配置文件：声明service,dao,工具类等对象-->
+
+    <!--声明数据库配置文件的位置-->
+    <context:property-placeholder location="classpath:conf/jdbc.properties" />
+
+    <!--声明数据源，连接数据库-->
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init"
+          destroy-method="close">
+        <!--
+            使用value还是ref，得看name属性对应的setUrl()、setUsername()方法的形参中类型
+            如果是简单数据类型(基本数据类型、包装类、String)就使用value
+            如果是引用数据类型(Object object)、List、Map等需要使用ref
+        -->
+        <property name="url" value="${jdbc.url}?serviceTimezone=GMT%2B&amp;charsetEncoding=utf-8&amp;useUnicode=true"/>
+        <property name="username" value="${jdbc.username}"/>
+        <property name="password" value="${jdbc.password}"/>
+    </bean>
+
+     <!--使用SqlSessionFactoryBean创建SqlSessionFactory对象-->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="configLocation" value="classpath:/conf/MyBatis.xml"/>
+    </bean>
+
+    <!--声明MyBatis的扫描器，创建Dao对象，也就是dao接口的实现类，使用的是JDK的动态代理创建-->
+    <!--创建dao的动态代理对象-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+        <!--这个也是路径信息，是包的全限定名称-->
+        <property name="basePackage" value="com.yunbocheng.dao"/>
+    </bean>
+
+    <!--
+        因为StudentDao没有对应的实现类，需要使用JDK动态代理来获取接口的实现类。
+        而service接口存在实现类，直接是实现类上使用@Service声明这个创建的是一个Service对象。
+    -->
+    <!--声明service的注解的@Service所在包的位置，完成service的创建-->
+    <context:component-scan base-package="com.yunbocheng.service"/>
+
+    <!--事务配置：注解的配置，aspectJ的配置-->
+
+
+</beans>
+```
+
+**(3) SpringMVC配置文件**
+
+- SpringMVC主配置文件组件扫描器的是Controller(Servlet)对象。
+
+- 配置视图解析器，简化跳转页面时的路径。
+- 注册注解驱动，解决ajax请求转为json格式数据以及解决静态资源访问你的冲突(只有)
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/mvc https://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+    <!--SpringMVC配置文件，声明controller和其他web相关的对象-->
+
+    <!--声明组件扫描器，使用动态代理的方式创建Servlet的动态代理对象-->
+    <context:component-scan base-package="com.yunbocheng.controller" />
+
+    <!--配置视图解析器-->
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <!--这里使用value属性，因为使用的是set注入的方式进行赋值-->
+        <property name="prefix" value="/WEB-INF/jsp/" />
+        <property name="suffix" value=".jsp" />
+    </bean>
+
+    <!--注解驱动，因为处理ajax请求(转换格式)以及静态资源(解决冲突)都需要用到注解驱动-->
+    <mvc:annotation-driven/>
+</beans>
+```
+
+**(4) 配置Mybatis.xml主配置文件**
+
+- 配置输出日志信息设置。
+- 设置参与请求数据道的类型的别名。
+- 指定mapper映射文件的位置。
+
+```
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <!--设置输出日志-->
+        <settings>
+            <setting name="logImpl" value="STDOUT_LOGGING" />
+        </settings>
+
+    <!--设置别名，使用报名的方式，包中的类名就是别名-->
+      <typeAliases>
+         <package name="com.yunbocheng.entity"/>
+     </typeAliases>
+
+    <mappers>
+        <!--
+            使用package ：指定dao接口包的位置，表示将包下面的sql映射文件找到
+            name: Dao接口的包名
+            使用package指定映射文件的要求：
+                1. sql映射文件(StudentDao.xml)和接口名一致
+                2. sql映射文件和Dao接口在同一目录
+        -->
+        <package name="com.yunbocheng.dao"/>
+    </mappers>
+</configuration>
+```
+
+#### 3.2.6 实体类
+
+```java
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class Student {
+
+    // 属性名和数据库的列名一致，如果不一样的话需要使用resultMap进行修改
+    private String num;
+
+    private String province;
+
+    private String city;
+
+    private String name;
+
+    private Integer age;
+
+    private Double score;
+
+    private String room;
+}
+```
+
+#### 3.2.7 Dao接口和sql映射文件。
+
+注意：
+
+必须保证StudentDao接口与StudentDao.xml文件处于同一目录下。
+
+必须保证接口的名称与配置文件的名称一致。
+
+- Dao接口的方法
+
+```java
+public interface StudentDao {
+
+    // 录入学生信息
+    int insertStudent(Student student);
+
+    // 查询全部的学生信息
+    List<Student> selectStudent();
+}
+```
+
+- sql映射文件
+
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yunbocheng.dao.StudentDao" >
+
+    <resultMap id="student" type="com.yunbocheng.entity.Student">
+        <id column="num" property="num"/>
+        <result column="province" property="province"/>
+        <result column="city" property="city"/>
+        <result column="name" property="name"/>
+        <result column="age" property="age"/>
+        <result column="score" property="score"/>
+        <result column="room" property="room"/>
+    </resultMap>
+
+    <select id="selectStudent" resultMap="student">
+        /*在实际开发中，尽量不写*号，写列名*/
+        select num,province,city,name,age,score,room from tab_student order by num;
+    </select>
+
+    <insert id="insertStudent" parameterType="Student">
+        insert into tab_student(num,province,city,name,age,score,room) values (#{num},#{province},#{city},#{name},#{age},#{score},#{room})
+    </insert>
+</mapper>
+
+```
+
+#### 3.2.8 Service接口与实现类
+
+- Service接口
+
+```java
+public interface StudentService {
+
+    // 录入学生信息
+    int addStudent(Student student);
+
+    // 查询全部学生信息
+    List<Student> findStudent();
+}
+```
+
+- Service接口的实现类（实现StudentService接口）
+
+```java
+/*声明Service对象*/
+@Service
+public class StudentServiceImpl implements StudentService {
+
+    /*
+        以前我们使用的是手动注入，在spring主配置文件中使用set手动注入。
+        这里使用 引用类型的自动注入@Autowired,@Resource
+        spring只能给引用类型的数据自动赋值，不可以给引用类型的数据赋值。
+        @Resource默认使用的是byName，不成功的时候使用ByType
+    */
+    /*
+        dao接口的首字母小写。这种使用的就是@resource的byName的方式
+        @Resource(name = "studentDao")
+    */
+    /*
+    * 这种使用的就是@Resource的byType方式
+    * 使用自动注入的方式创建一个StudentDao对象
+    * */
+    @Resource
+    private StudentDao studentDao;
+
+    @Override
+    public int addStudent(Student student) {
+        return studentDao.insertStudent(student);
+    }
+
+    @Override
+    public List<Student> findStudent() {
+        return studentDao.selectStudent();
+    }
+}
+```
+
+#### 3.2.9 处理器定义(也就是Servlet对象)
+
+```java
+@Controller
+@RequestMapping(value = "/student")
+public class StudentController {
+
+    // 使用自动注入的方式创建一个Service对象
+    @Resource
+    private StudentService service;
+
+
+    // 注册学生
+    @RequestMapping(value = "/addStudent.do")
+    /*在形参的部分接收前端传递过来的参数，此时使用student对象接收参数*/
+    public ModelAndView addStudent(Student student){
+        ModelAndView mv = new ModelAndView();
+        String str = "学生 【\" + student.getName() + \"】 注册失败！";
+        int nums = service.addStudent(student);
+        System.out.println(nums);
+        if (nums == 1){
+            // 注册成功
+            str = "学生 【" + student.getName() + "】 注册成功！";
+        }
+        // 添加数据
+        mv.addObject("result",str);
+        // 指定结果页面
+        mv.setViewName("show");
+        return mv;
+    }
+}
+```
+
+#### 3.2.10 定义一个视图-->首页文件-->index.jsp
+
+- 可以使用以下的方式指定当前项目的根路径。
+
+![](https://gitee.com/YunboCheng/imageBad/raw/master/image/20211122224021.png)
+
+- 我们这里使用 application 域存储根路径。
+
+```jsp
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<% application.setAttribute("path",request.getContextPath());%>
+<html>
+<head>
+    <title>SSM整合开发</title>
+    <style>
+        .myStudent{
+            font-size: 30px;
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div><img src="images/spring事务处理.png" alt="图片加载失败！"></div>
+    <div align="center" class="myStudent"><a href="addStudent.jsp">注册学生信息</a></div>
+    <div align="center" class="myStudent"><a href="selectStudent.jsp">查询学生信息</a></div>
+</body>
+</html>
+```
+
+#### 3.2.11 注册学生信息界面-->addStudent.jsp
+
+```jsp
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<% application.setAttribute("path",request.getContextPath());%>
+<html>
+<head>
+    <title>添加学生信息</title>
+    <style>
+        .myStudent{
+            font-size: 30px;
+            color: red;
+        }
+    </style>
+</head>
+<body>
+<div><img src="images/spring事务处理.png" alt="图片加载失败！"></div>
+<div align="center" class="myStudent">注册学生信息</div>
+<form action="${path }/student/addStudent.do" method="post">
+    <table align="center" border="2px">
+        <tr>
+            <th>
+                学号：
+            </th>
+            <td>
+                <%--需要保证请求参数名和Student类中的属性名一致--%>
+                <input type="text" name="num" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                省份：
+            </th>
+            <td>
+                <%--需要保证请求参数名和Student类中的属性名一致--%>
+                <input type="text" name="province" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                城市：
+            </th>
+            <td>
+                <%--需要保证请求参数名和Student类中的属性名一致--%>
+                <input type="text" name="city" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                姓名：
+            </th>
+            <td>
+                <%--需要保证请求参数名和Student类中的属性名一致--%>
+                <input type="text" name="name" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                年龄：
+            </th>
+            <td>
+                <%--需要保证请求参数名和Student类中的属性名一致--%>
+                <input type="text" name="age" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                分数：
+            </th>
+            <td>
+                <%--需要保证请求参数名和Student类中的属性名一致--%>
+                <input type="text" name="score" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                教室：
+            </th>
+            <td>
+                <%--需要保证请求参数名和Student类中的属性名一致--%>
+                <input type="text" name="room" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="submit" value="录入" />
+            </td>
+            <td>
+                <input type="reset" value="重置" />
+            </td>
+        </tr>
+    </table>
+</form>
+</body>
+</html>
+
+```
+
+#### 3.2.12 显示处理结果界面-->show.jsp
+
+```jsp
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<html>
+<head>
+    <title>展示数据</title>
+    <style>
+        div{
+            color: red;
+            font-size: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div align="center" >${result}</div>
+</body>
+</html>
+```
+
+**通过以上的配置即可完成一个SSM使用注解开发的基本配置。**
