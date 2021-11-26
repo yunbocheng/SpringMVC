@@ -94,6 +94,15 @@
 
     <%--给这个按钮添加一个单击事件--%>
     <button id="btn">发起ajax请求</button>
+
+
+    <p>当处理器方法返回ModelAndView实现forward</p>
+    <form action="doForward.do" method="get">
+        姓名：<input type="text" name="name"/><br>
+        年龄：<input type="text" name="age" /><br>
+        <input type="submit" value="提交请求" />
+    </form>
+
 </body>
 </html>
 

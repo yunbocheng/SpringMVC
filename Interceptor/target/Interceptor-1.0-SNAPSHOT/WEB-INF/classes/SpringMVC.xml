@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/mvc https://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+    <!--SpringMVC配置文件，声明controller和其他web相关的对象-->
+
+    <!--声明组件扫描器，使用动态代理的方式创建Servlet的动态代理对象-->
+    <context:component-scan base-package="com.yunbocheng.controller" />
+
+    <!--配置视图解析器-->
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <!--这里使用value属性，因为使用的是set注入的方式进行赋值-->
+        <property name="prefix" value="/WEB-INF/jsp/" />
+        <property name="suffix" value=".jsp" />
+    </bean>
+
+    <!--注解驱动，因为处理ajax请求(转换格式)以及静态资源(解决冲突)都需要用到注解驱动-->
+    <mvc:annotation-driven/>
+
+
+    <!--声明拦截器：拦截器可以有0个或者多个-->
+    <!--这个拦截器是被复数标签包裹的，说明存在多个拦截器-->
+    <mvc:interceptors>
+        <!--声明第一个拦截器-->
+        <mvc:interceptor>
+            <!--
+                指定拦截器的uri地址。
+                path：指定uri地址，可以使用通配符 **
+                ** ： 表示任意字符，文件或者多级目录和目录中的文件。
+            -->
+            <!--以下代表所有的的请求都会被拦截-->
+            <mvc:mapping path="/**"/>
+            <!--
+                <mvc:mapping path="/user/**"/> 这个表示所有以user开头的的请求都会被拦截器处理
+            -->
+            <!--声明拦截器对象，这个拦截器是我们自己写的-->
+            <bean class="com.yunbocheng.handler.MyInterceptor"/>
+        </mvc:interceptor>
+    </mvc:interceptors>
+</beans>

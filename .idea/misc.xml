@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="FrameworkDetectionExcludesConfiguration">
+    <file type="web" url="file://$PROJECT_DIR$/Exception" />
     <file type="web" url="file://$PROJECT_DIR$/Hello-SpringMVC" />
+    <file type="web" url="file://$PROJECT_DIR$/Interceptor" />
+    <file type="web" url="file://$PROJECT_DIR$/Interceptors" />
+    <file type="web" url="file://$PROJECT_DIR$/Jump" />
     <file type="web" url="file://$PROJECT_DIR$/Spring-Parameter" />
     <file type="web" url="file://$PROJECT_DIR$/Spring-ReturnValue" />
     <file type="web" url="file://$PROJECT_DIR$/Spring-url-pattern的第二种方式" />
@@ -18,6 +22,10 @@
         <option value="$PROJECT_DIR$/Spring-ReturnValue/pom.xml" />
         <option value="$PROJECT_DIR$/Spring-url-pattern的第二种方式/pom.xml" />
         <option value="$PROJECT_DIR$/SSM整合开发/pom.xml" />
+        <option value="$PROJECT_DIR$/Jump/pom.xml" />
+        <option value="$PROJECT_DIR$/Exception/pom.xml" />
+        <option value="$PROJECT_DIR$/Interceptor/pom.xml" />
+        <option value="$PROJECT_DIR$/Interceptors/pom.xml" />
       </list>
     </option>
   </component>

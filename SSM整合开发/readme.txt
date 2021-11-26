@@ -54,3 +54,29 @@ SpringMVC容器是Spring容器的子容器，类似Java中的继承。类似与�
     6. 写代码，dao接口和mapper文件、service和实现类 controller，实体类。
 
     7. 写jsp页面。
+
+    ssm中 在web.xml中配置
+        1)是监听器用来创建Spring容器，给定Spring配置文件的位置。
+    将spring配置文件中声明的service以及dao类的对象创建并且放到sprig容器中
+
+        2)还有中央调度器，创建SpringMVC容器，指定SpringMVC配置文件的位置，
+    并将controller类的对象创建并放入到SpringMVC容器中。
+
+        3)还有一个过滤器 用来解决post请求的乱码问题。
+
+    ssm的Spring主配置文件
+        1) 连接数据库
+        2) 声明组件扫描器创建service、dao对象
+
+    ssm的SpringMVC主配置文件
+        1) 声明组件扫描器，创建被@Controller注解标注的类的对象，也就是Servlet对象。
+        2) 配置视图解析器，简化处理器方法返回页面时路径复杂问题
+        3) 创建注解驱动，解决ajax请求时数据格式转换的问题(将Java对象转化为json、text、xml等格式)，
+                       解决当中央调度器中的 url-pattern 为"/"的时候静态资源与注解之间的冲突。
+
+    ssm中的myBatis主配置文件
+        1) 设置myBatis的日志输出
+        2) 指定请求参数模板的类型的别名
+        3) 指定mapper映射文件的位置。
+
+

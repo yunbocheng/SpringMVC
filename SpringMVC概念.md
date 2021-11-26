@@ -1207,3 +1207,445 @@ public class StudentController {
 ```
 
 **通过以上的配置即可完成一个SSM使用注解开发的基本配置。**
+
+
+
+## 第四章  SpringMVC 核心技术
+
+### 4.1 请求重定向和转发
+
+- 当处理器对请求处理完毕后，向其它资源进行跳转时，有两种跳转方式：请求转发与重 定向。而根据所要跳转的资源类型，又可分为两类：跳转到页面与跳转到其它处理器。
+-  注意，对于请求转发的页面，可以是WEB-INF中页面；而重定向的页面，是不能为WEB-INF 中页的。因为重定向相当于用户再次发出一次请求，而用户是不能直接访问 WEB-INF 中资 源的
+
+![image-20211124223840114](https://gitee.com/YunboCheng/imageBad/raw/master/image/image-20211124223840114.png)
+
+SpringMVC 框架把原来 Servlet 中的请求转发和重定向操作进行了封装。现在可以使用简 单的方式实现转发和重定向。
+
+- forward:表示转发，实现 request.getRequestDispatcher("xx.jsp").forward()
+- redirect:表示重定向，实现 response.sendRedirect("xxx.jsp"
+
+#### 4.4.1 请求转发
+
+- 处理器方法返回 ModelAndView 时，需在 setViewName()指定的视图前添加 forward:，且 此时的视图不再与视图解析器一同工作，这样可以在配置了解析器时指定不同位置的视图。 视图页面必须写出相对于项目根的路径。forward 操作不需要视图解析器。 
+- 处理器方法返回 String,在视图路径前面加入 forward: 视图完整路径。
+
+```java
+    @RequestMapping(value = "/some.do")
+    public ModelAndView doSome(String name,int age){
+        ModelAndView mv = new ModelAndView();
+        mv.addObject("myName",name);
+        mv.addObject("myAge",age);
+        /*使用forward请求转发的方式*/
+        /*这个是请求转发的方式，可以请求到WEB-INF下的页面*/
+        mv.setViewName("forward:/WEB-INF/view/show.jsp");
+        return mv;
+    }
+```
+
+#### 4.1.2 请求重定向
+
+- 在处理器方法返回的视图字符串的前面添加 redirect:，则可实现重定向跳转。
+
+```java
+    @RequestMapping(value = "/some2.do")
+    public ModelAndView doSome2(String name,int age){
+        ModelAndView mv = new ModelAndView();
+        /*此时的数据放到request作用域中*/
+        mv.addObject("myName",name);
+        mv.addObject("myAge",age);
+        /*使用redirect请求转发的方式*/
+        /*这个是重回定向的方式，请求不到WEB-INF下的网页*/
+        mv.setViewName("redirect:/show.jsp");
+        // http://localhost:8080/myWeb/show.jsp?myName=lisi&myAge=20
+        return mv;
+    }
+```
+
+### 4.2 异常处理
+
+- **SpringMVC 框架处理异常的常用方式：使用@ExceptionHandler 注解处理异常。**
+
+#### 4.2.1 @ExceptionHandler 注解
+
+- 使用注解@ExceptionHandler 可以将一个方法指定为异常处理方法。该注解只有一个可 选属性 value，为一个 Class数组，用于指定该注解的方法所要处理的异常类，即所要匹 配的异常。 
+
+- 而被注解的方法，其返回值可以是 ModelAndView、String，或 void，方法名随意，方法 参数可以是 Exception 及其子类对象、HttpServletRequest、HttpServletResponse 等。系统会 自动为这些方法参数赋值。 
+- 对于异常处理注解的用法，也可以直接将异常处理方法注解于 Controller 之中。
+
+**（1） 自定义异常类**
+
+**定义三个异常类：NameException、AgeException、MyUserException。其中 MyUserException 是另外两个异常的父类。**
+
+![](https://gitee.com/YunboCheng/imageBad/raw/master/image/20211124224206.png)
+
+```java
+public class MyUserException extends Exception{
+
+    /*继承父类的有参构造个无参构造方法*/
+
+    public MyUserException() {
+        super();
+    }
+
+    public MyUserException(String message) {
+        super(message);
+    }
+}
+```
+
+```java
+/*
+* 当输入的年龄存在异常的时候抛出异常
+* */
+public class AgeException extends MyUserException{
+    public AgeException() {
+        super();
+    }
+
+    public AgeException(String message) {
+        super(message);
+    }
+}
+```
+
+```java
+/*
+* 当用户的姓名存在异常的时候抛出的异常，抛出NameException
+* */
+public class NameException extends MyUserException{
+    public NameException() {
+        super();
+    }
+
+    public NameException(String message) {
+        super(message);
+    }
+}
+
+```
+
+**（2） 修改 Controller 抛出异常**
+
+```java
+/*
+* 这个类中我们使用Java代码处理异常(也就是try...catch)
+* 我们使用框架来处理异常
+* */
+@Controller
+public class MyController {
+
+    @RequestMapping(value = "/exception.do")
+    public ModelAndView exception(String name,int age) throws MyUserException {
+        ModelAndView mv = new ModelAndView();
+        // 根据请求参数抛出异常
+        /*
+        * 处理的顺序：
+        *   代码从上往下执行，如果满足第一个if条件的话，那么程序会进入到这个异常的类中，
+        *   不会在继续执行这个处理器方法，此时跳转到异常处理的类中，也就是被@ControllerAdvice注解
+        *   标注的类。这里就是 GlobalExceptionHandel 这个类。
+        *
+        * 在异常类中，会根据抛出异常的类型在异常类中寻找被@ExceptionHandler(value = NameException.class)
+        * 标注的方法上的这个注解中的value属性的值，进行异常的处理。
+        * */
+        if (!"程云博".equals(name)){
+            throw  new NameException("输入的姓名不正确！");
+        }
+        if (age == 0|| age > 80){
+            /*
+                这里指定的抛出异常的信息相当于系统抛出的异常，类似于NullPointException
+                属于系统界别的异常
+            * */
+            throw new AgeException("年龄不符合要求！");
+        }
+        mv.addObject("myName",name);
+        mv.addObject("myAge",age);
+        mv.setViewName("show");
+        return mv;
+    }
+}
+
+```
+
+**（3） 定义异常响应页面**
+
+**定义三个异常响应页面。**
+
+![image-20211124224421872](https://gitee.com/YunboCheng/imageBad/raw/master/image/image-20211124224421872.png)
+
+- 不过，一般不这样使用。而是将异常处理方法专门定义在一个类中，作为全局的异常处 理类。
+- 需要使用注解@ControllerAdvice，字面理解就是“控制器增强”，是给控制器对象增强 功能的。使用@ControllerAdvice 修饰的类中可以使用@ExceptionHandler
+- 当使用@RequestMapping 注解修饰的方法抛出异常时，会执行@ControllerAdvice 修饰的 类中的异常处理方法。
+- @ControllerAdvice 是使用@Component 注解修饰的，可以 扫描到@ControllerAdvice 所在的类路径(包名)，创建对象。
+
+**（4） 定义全局异常处理类**
+
+```java
+/*
+* @ControllerAdvice :控制类增强(也就是给控制器类增加功能-->异常处理的功能)
+*   位置：在类的上面
+*   特点：必须让框架知道这个注解所在的包名，需要在SpringMVC的配置文件中加入组件扫描器。
+*        指定@ControllerAdvice所在的包名
+*   这个使用的是Spring中的AOP技术，就是在原有的业务代码中加入一些与业务无关的方法。
+*   比如日志、错误信息等。
+* */
+@ControllerAdvice
+public class GlobalExceptionHandel {
+    // 定义方法来处理发生的异常
+    /*
+    * 处理异常的方法和处理控制器的方法一样，
+    * 可以有多种参数：普通数据类型、Object对象类型、List、Map集合都可以。
+    * 可以有多种返回值类型ModelAndView、String、void对象、list对象集合。
+    *
+    * 形参：Exception。表示Controller中抛出的异常对象。
+    *      通过形参可以获取发生的异常信息。
+    *
+    * @ExceptionHandel(value = 异常类.class)：表示异常的类型，当发生此类型异常时
+    *                               由当前方法进行处理。
+    * */
+
+    /*
+    * SpringMVC处理异常的方式，他会在Controller类中接收到一个异常，之后在这个处理异常的类中
+    * 寻找处理这个异常的方法，通过@ExceptionHandler注解的value值进行匹配。
+    * 如果Controller类抛出的异常和@ExceptionHandler注解的value值都没有匹配到，
+    * 那么就执行最后没有value值的@ExceptionHandler注解所对应的方法。
+    *
+    * 注意 ：@ExceptionHandler没有value属性的注解只能存在一个。相当于if...else中的else。
+    * */
+    @ExceptionHandler(value = NameException.class)
+    public ModelAndView doNameException(Exception exception){
+        // 处理NameException的异常。
+        /*
+        * 异常发生我们要处理的逻辑：
+        *   1. 需要把异常记录下来，记录到日志文件或者数据库中。
+        *      记录日志发生的时间，哪个方法发生的，异常信息内容。
+        *   2. 发送通知，把异常的信息通过邮件、短信、维信发送给相关人员。
+        *
+        *   3. 给用户一个很好的复杂。
+        * */
+        ModelAndView mv = new ModelAndView();
+        /*这里的异常信息只是一个提示用户的信息，这个信息是我们自己给的，显示给前端jsp页面的*/
+        mv.addObject("msg","姓名必须的是程云博，其他用户不可以访问！");
+        // 异常对象，这个就相当于系统抛出异常的那个对象。比如：NullPointException对象。
+        // 或者是我们自定义的 AgeException、NameException。
+
+        mv.addObject("ex",exception);
+        mv.setViewName("nameError");
+        return mv;
+    }
+
+    @ExceptionHandler(value = AgeException.class)
+    public ModelAndView doAgeException(Exception exception){
+        // 处理AgeException的异常。
+        /*
+         * 异常发生我们要处理的逻辑：
+         *   1. 需要把异常记录下来，记录到日志文件或者数据库中。
+         *      记录日志发生的时间，哪个方法发生的，异常信息内容。
+         *   2. 发送通知，把异常的信息通过邮件、短信、维信发送给相关人员。
+         *
+         *   3. 给用户一个很好的复杂。
+         * */
+        ModelAndView mv = new ModelAndView();
+        mv.addObject("msg","您的年龄不符合要求！");
+        // 异常对象
+        mv.addObject("ex",exception);
+        mv.setViewName("ageError");
+        return mv;
+    }
+
+    // 处理其他异常，NameException、AgeException以外的异常，不知道的异常类型
+    // 当错误信息不是NameException、AgeException的时候，就交给这个方法来处理异常
+    @ExceptionHandler
+    public ModelAndView doOtherException(Exception exception){
+        // 处理其他的异常。
+        /*
+         * 异常发生我们要处理的逻辑：
+         *   1. 需要把异常记录下来，记录到日志文件或者数据库中。
+         *      记录日志发生的时间，哪个方法发生的，异常信息内容。
+         *   2. 发送通知，把异常的信息通过邮件、短信、维信发送给相关人员。
+         *
+         *   3. 给用户一个很好的复杂。
+         * */
+        ModelAndView mv = new ModelAndView();
+        mv.addObject("msg","您的年龄不符合要求！");
+        // 异常对象
+        mv.addObject("ex",exception);
+        mv.setViewName("defaultError");
+        return mv;
+    }
+}
+
+```
+
+**（5） 定义 Spring 配置文件**
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/mvc https://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+    <!--SpringMVC配置文件，声明controller和其他web相关的对象-->
+
+    <!--声明组件扫描器，使用动态代理的方式创建Servlet的动态代理对象-->
+    <context:component-scan base-package="com.yunbocheng.controller" />
+
+    <!--配置视图解析器-->
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <!--这里使用value属性，因为使用的是set注入的方式进行赋值-->
+        <property name="prefix" value="/WEB-INF/view/" />
+        <property name="suffix" value=".jsp" />
+    </bean>
+
+    <!--注解驱动，因为处理ajax请求(转换格式)以及静态资源(解决冲突)都需要用到注解驱动-->
+    <mvc:annotation-driven/>
+
+    <!--处理异常的组件扫描器，指定处理异常类所在的包-->
+    <context:component-scan base-package="com.yunbocheng.handel"/>
+</beans>
+```
+
+### 4.3 拦截器
+
+- SpringMVC 中的 Interceptor 拦截器是非常重要和相当有用的，它的主要作用是拦截指定的用户请求，并进行相应的预处理与后处理。其拦截的时间点在“处理器映射器根据用户提 交的请求映射出了所要执行的处理器类，并且也找到了要执行该处理器类的处理器适配器， 在处理器适配器执行处理器之前”。当然，在处理器映射器映射出所要执行的处理器类时， 已经将拦截器与处理器组合为了一个处理器执行链，并返回给了中央调度器。
+
+#### 4.3.1  拦截器的执行
+
+**自定义拦截器**
+
+```java
+/*
+* 这是一个拦截器类，需要继承HandlerInterceptor接口
+* 并且实现其中的三个类。
+*
+* 这个类用于拦截用户的请求。
+* */
+
+public class MyInterceptor implements HandlerInterceptor {
+
+    // 实现HandlerInterceptor这个接口中的三个方法，查看源码可以看到者三个方法是使用Default声明的方法
+    // 所以我们不需要全部的实现这三个方法
+    // 我们这里实现这三个方法。
+
+    /*
+    * preHandle() : 这个方法叫做预处理方法。
+    * 参数：
+    *   Object handler ：被拦截的控制器对象(也就是项目中的MyController对象)
+    * 返回值：boolean
+    *   true : 表示此时请求通过了拦截器的验证，可以执行处理器方法处理这个请求。
+    *   false : 表示此时的请求没有通过拦截器的验证，不可以执行处理器方法处理这个请求。
+    *
+    *  特点：
+    *   1. 方法是在控制器方法(MyController的doSome)之前先执行的。
+    *      用户的请求首先到达此方法
+    *   2. 在这个方法中可以获取请求的信息。验证请求是否符合要求。
+    *      可以验证用户是否可以登录，验证用户是否有权限访问某个连接地址(url)
+    *      如果验证失败，可以截断请求，请求不能被处理。
+    *      如果验证成功，可以放行请求，此时控制器方法才可以执行。
+    * */
+    private long bTime;
+    @Override
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        bTime = System.currentTimeMillis();
+        System.out.println("拦截器的MyInterceptor的perHandler()");
+
+        // 在这个方法中进行业务逻辑的判断，返回true还是false，进而控制这个请求可不可以交给处理器方法进行处理。
+
+        /*当请求被拦截器拦截下来的时候，给浏览器一个返回页面结果*/
+        /*request.getRequestDispatcher("/tips.jsp").forward(request,response);*/
+        return true;
+    }
+
+    /*
+    * postHandle : 后处理方法。
+    *
+    * 参数：
+    *   Object handler ： 被拦截的处理器对象MyController。
+    *   ModelAndView modelAndView : 处理器方法的返回值。
+    *
+    * 返回值：void
+    *
+    * 特点：
+    *   1. 方法是在处理方法之后执行的(MyController.doSome())
+    *   2. 能够获取到处理器方法的返回值ModelAndView，可以修改ModelAndView中的
+    *      数据和视图，可以影响最后的执行结果。
+    *   3. 主要对原来的执行结果进行二次修饰。
+    * */
+    @Override
+    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
+        /*执行这个处理结果的方法的前提是预处理方法返回的为true*/
+        System.out.println("拦截器的MyInterceptor的postHandle()");
+
+        // 对原来的处理器方法的返回值进行处理。
+        if (modelAndView != null){
+            // 添加返回值中的数据
+            modelAndView.addObject("myDate",new Date());
+            // 修改返回值的数据
+            modelAndView.addObject("myAge",40);
+            // 修改返回的视图
+            modelAndView.setViewName("other");
+        }
+    }
+
+
+    /*
+    * afterCompletion : 最后执行的方法
+    *   参数：
+    *      Object handler : 被拦截的处理器对象。
+    *      Exception ex : 程序中发生的异常。
+    *  特点：
+    *      1. 是在请求处理完成后执行的。框架中的规定是当你的视图处理完成后，对视图执行了forward。就认为是请求处理完成了。
+    *      2. 一般是做资源回收工作的，程序请求过程中创建一些对象，在这里可以删除，把占用的内存回收。
+    * */
+    @Override
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+        System.out.println("拦截器的MyInterceptor的afterCompletion");
+        long eTime = System.currentTimeMillis();
+        System.out.println("计算preHandler到请求处理完成的时间：" + (eTime - bTime));
+    }
+}
+```
+
+**自定义拦截器，需要实现 HandlerInterceptor 接口。而该接口中含有三个方法：**
+
+➢ preHandle(request,response, Object handler)： 该方法在处理器方法执行之前执行。其返回值为 boolean，若为 true，则紧接着会执行处理器方 法，且会将 afterCompletion()方法放入到一个专门的方法栈中等待执行。 
+
+➢ postHandle(request,response, Object handler,modelAndView)： 该方法在处理器方法执行之后执行。处理器方法若最终未被执行，则该方法不会执行。 由于该方法是在处理器方法执行完后执行，且该方法参数中包含 ModelAndView，所以该方法可以修 改处理器方法的处理结果数据，且可以修改跳转方向。
+
+ ➢ afterCompletion(request,response, Object handler, Exception ex)： 当 preHandle()方法返回 true 时，会将该方法放到专门的方法栈中，等到对请求进行响应的所有 工作完成之后才执行该方法。即该方法是在中央调度器渲染（数据填充）了响应页面之后执行的，此 时对 ModelAndView 再操作也对响应无济于事。
+
+**afterCompletion 最后执行的方法，清除资源，例如在 Controller 方法中加入数据**
+
+![](https://gitee.com/YunboCheng/imageBad/raw/master/image/20211124224919.png)
+
+**拦截器中方法与处理器方法的执行顺序如下图：**
+
+![](https://gitee.com/YunboCheng/imageBad/raw/master/image/20211124224935.png)
+
+**换一种表现方式，也可以这样理解：**
+
+![](https://gitee.com/YunboCheng/imageBad/raw/master/image/20211124224949.png)
+
+**（1） 注册拦截器**
+
+![](https://gitee.com/YunboCheng/imageBad/raw/master/image/20211124225100.png)
+
+- 用于指定当前所注册的拦截器可以拦截的请求路径，而/**表示拦截所 有请求。
+
+**（2） 修改 index 页面**
+
+![image-20211124225203409](https://gitee.com/YunboCheng/imageBad/raw/master/image/image-20211124225203409.png)
+
+**（3） 修改处理器**
+
+![](https://gitee.com/YunboCheng/imageBad/raw/master/image/20211124225238.png)
+
+**（4） 修改 show 页面**
+
+![](https://gitee.com/YunboCheng/imageBad/raw/master/image/20211124225251.png)
+
+**（5） 控制台输出结果**
+
+![](https://gitee.com/YunboCheng/imageBad/raw/master/image/20211124225305.png)
+

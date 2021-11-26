@@ -5,7 +5,9 @@ import com.yunbocheng.entity.Student;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -191,4 +193,14 @@ public class MyController {
     public String doStringData(String name,Integer age){
         return "Hello SpringMVC 返回对象，表示数据!";
     }
+
+    @RequestMapping(value = "/doForward.do")
+    public ModelAndView testForward(){
+        ModelAndView mv = new ModelAndView();
+        mv.addObject("myName","名字");
+        mv.addObject("myAge","年龄");
+        mv.setViewName("show");
+        return mv;
+    }
+
 }
